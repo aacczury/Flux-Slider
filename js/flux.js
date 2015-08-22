@@ -182,15 +182,14 @@ window.flux = {
 		start: function() {
 			var _this = this;
 			this.playing = true;
-			this.interval = setInterval(function() {
+			this.timeout = setTimeout(function() {
 				console.log('play');
 				_this.transition();
 			}, this.options.delay);
 		},
 		stop: function() {
 			this.playing = false;
-			clearInterval(this.interval);
-			this.interval = null;
+			clearTimeout(this.timeout);
 		},
 		isPlaying: function() {
 			return this.playing;
@@ -207,12 +206,7 @@ window.flux = {
 			this.showImage(this.currentImageIndex-1, trans, opts);
 		},
 		showImage: function(index, trans, opts) {
-			this.setNextIndex(index);
-			
-			// Temporarily stop the transition interval
-			//clearInterval(this.interval);
-			//this.interval = null;
-			
+			this.setNextIndex(index);			
 			this.setupImages();
 			this.transition(trans, opts);
 		},  
@@ -371,10 +365,12 @@ window.flux = {
 				'z-index': 100
 			}).show();
 
+		},
+		changePagination: function(){
 			if(this.options.pagination && this.pagination)
 			{
 				this.pagination.find('li.current').removeClass('current');
-				$(this.pagination.find('li')[this.currentImageIndex]).addClass('current');
+				$(this.pagination.find('li')[this.nextImageIndex]).addClass('current');
 			}
 		},
 		transition: function(transition, opts) {
@@ -401,6 +397,13 @@ window.flux = {
 	        this.currentImageIndex = this.nextImageIndex;
 	        this.setNextIndex(this.currentImageIndex+1);
 			this.updateCaption();
+			
+			var _this = this;
+			clearTimeout(this.timeout);
+			this.timeout = setTimeout(function() {
+				console.log('play');
+				_this.transition();
+			}, this.options.delay);
 		},
 		updateCaption: function() {
 			var str = $(this.getImage(this.currentImageIndex)).attr('title');
@@ -625,6 +628,8 @@ window.flux = {
 		constructor: flux.transition,
 		hasFinished: false, // This is a lock to ensure that the fluxTransitionEnd event is only fired once per tansition
 		run: function() {
+			this.slider.changePagination();
+			
 			var _this = this;
 
 			// do something
